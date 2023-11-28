@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MNIST Digit Recognition</title>
+    <style>
+        #canvas {
+            border: 1px solid #000;
+            background-color: #000;
+        }
+    </style>
+</head>
+<body>
+    <h1>MNIST Digit Recognition</h1>
+
+    <canvas id="canvas" width="280" height="280"></canvas>
+
+    <form id="prediction-form">
+        <button type="button" onclick="predictDigit()">Predict</button>
+    </form>
+
+    <div id="prediction-result"></div>
+
+    <script>
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+        var drawing = false;
+
+        // Set white color for drawing
+        ctx.strokeStyle = "#fff";
+        ctx.fillStyle = "#fff";
+
+        canvas.addEventListener("mousedown", function (e) {
+            drawing = true;
+            ctx.lineWidth = 18;
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+        });
+
+        canvas.addEventListener("mousemove", function (e) {
+            if (!drawing) return;
+            ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+            ctx.stroke();
+        });
+
+        canvas.addEventListener("mouseup", function () {
+            drawing = false;
+        });
+
+        function predictDigit() {
+            var smallCanvas = document.createElement("canvas");
+            var smallCtx = smallCanvas.getContext("2d");
+            smallCanvas.width = 28;
+            smallCanvas.height = 28;
+            smallCtx.drawImage(canvas, 0, 0, 28, 28);
+        
+            var dataURL = smallCanvas.toDataURL();
+            var formData = new FormData();
+            formData.append("image", dataURL);
+        
+            // Clear the canvas
+            clearCanvas();
+        
+            fetch("/predict", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data); // Log the response for debugging
+                if (data.result !== undefined) {
+                    document.getElementById("prediction-result").innerText = "Predicted Digit: " + data.result;
+                } else {
+                    document.getElementById("prediction-result").innerText = "Prediction failed. Please try again.";
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                document.getElementById("prediction-result").innerText = "Error occurred during prediction.";
+            });
+        }
+
+        // Function to clear the canvas
+        function clearCanvas() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+    </script>
+</body>
+</html>
