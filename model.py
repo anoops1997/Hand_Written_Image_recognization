@@ -16,14 +16,14 @@ def Mnist():
     model.add(layers.Dense(128, activation='relu'))
     model.add(layers.Dense(256, activation='tanh'))
     model.add(layers.Dense(128, activation='relu'))
-    model.add(layers.Dropout(0.2))
+    model.add(layers.Dropout(0.3))
     model.add(layers.Dense(10, activation='softmax'))
 
     # Compile the model
     model.compile(optimizer=Adam(learning_rate=0.001),
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
-    model.fit(train_images, train_labels, epochs=100, batch_size=64, validation_split=0.2)
+    model.fit(train_images, train_labels, epochs=10, batch_size=64, validation_split=0.3)
     model.save('mnist_model.h5')
 
     return model
